@@ -1,24 +1,25 @@
 import 'dotenv/config';
 import * as joi from 'joi';
-import { NATS_SERVICE } from './services';
 
 interface EnvVars {
   PORT: number;
-
-  NATS_SERVERS: string[];
+  KAFKA_BROKERS: string[];
+  KAFKA_GROUP_ID: string;
+  KAFKA_CLIENT_ID: string;
 }
 
 const envsSchema = joi
   .object({
     PORT: joi.number().required(),
-
-    NATS_SERVERS: joi.array().items(joi.string()).required(),
+    KAFKA_BROKERS: joi.array().items(joi.string()).required(),
+    KAFKA_GROUP_ID: joi.string().required(),
+    KAFKA_CLIENT_ID: joi.string().required(),
   })
   .unknown(true);
 
 const { error, value } = envsSchema.validate({
   ...process.env,
-  NATS_SERVERS: process.env.NATS_SERVERS?.split(','),
+  KAFKA_BROKERS: process.env.KAFKA_BROKERS?.split(','),
 });
 
 if (error) {
@@ -29,5 +30,9 @@ const envVars: EnvVars = value;
 
 export const envs = {
   port: envVars.PORT,
-  natsServers: envVars.NATS_SERVERS,
+   kafka: {
+    brokers: envVars.KAFKA_BROKERS,
+    groupId: envVars.KAFKA_GROUP_ID,
+    clientId: envVars.KAFKA_CLIENT_ID,
+  }
 };
