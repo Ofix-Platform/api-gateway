@@ -30,9 +30,9 @@ const envVars: EnvVars = value;
 
 export const envs = {
   port: envVars.PORT,
-   kafka: {
+  kafka: {
     brokers: envVars.KAFKA_BROKERS,
     groupId: envVars.KAFKA_GROUP_ID,
     clientId: envVars.KAFKA_CLIENT_ID,
-  }
+  },
 };
