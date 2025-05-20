@@ -1,9 +1,12 @@
 import {
+  IsNumber,
   IsString,
   IsUUID,
   MaxLength,
+  Min,
 } from 'class-validator';
 import { UUID } from 'crypto';
+
 
 export class OrderItemDto {
   @IsUUID()
@@ -22,4 +25,8 @@ export class OrderItemDto {
 
   @IsString()
   location: string;
+
+  @IsNumber()
+  @Min(0)
+  price: number;
 }
