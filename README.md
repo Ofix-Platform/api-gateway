@@ -1,64 +1,79 @@
-# Orders Microservice
+# API Gateway - Guía de Instalación
 
-This is a NestJS microservice that handles order management using Kafka for messaging and PostgreSQL for data storage.
+Este servicio actúa como punto de entrada para nuestra arquitectura de microservicios, gestionando las peticiones HTTP y comunicándose con otros servicios a través de Kafka.
 
-## Prerequisites
+## Prerrequisitos
 
-- Node.js 16 or higher
-- Docker and Docker Compose (for Kafka)
-- PostgreSQL database (we're using Neon)
-- npm or yarn package manager
+- Node.js 16 o superior
+- Docker y Docker Compose (para Kafka)
+- npm o yarn
 
-## Environment Setup
+## Pasos para Instalar y Ejecutar
 
-1. Clone the repository:
+### 1. Clonar el Repositorio
+
 ```bash
-git clone <repository-url>
-cd orders-ms
+git clone <url-del-repositorio>
+cd api-gateway
 ```
 
-2. Create a `.env` file in the root directory:
+### 2. Configurar Variables de Entorno
+
+1. Crear un archivo `.env` en el directorio raíz:
+
+```bash
+cp .env.template .env
+```
+
+2. El archivo `.env` debe contener:
+
 ```env
-PORT=3000     
- 
+PORT=3000
 KAFKA_BROKERS=localhost:9092
 KAFKA_GROUP_ID=orders-consumer-group
 KAFKA_CLIENT_ID=api-gateway
 ```
 
-## Kafka Setup
+### 3. Configurar Kafka
 
-1. Make sure Kafka is running on your local machine:
-```bash
-# Check if Kafka is running
-nc -zv localhost:9092
-```
+1. Iniciar Kafka con Docker Compose:
 
-2. If you need to start Kafka, you can use Docker Compose:
 ```bash
 docker-compose up -d
 ```
 
-## Running the Application
+2. Verificar que Kafka esté funcionando:
 
-1. Install dependencies:
 ```bash
+nc -zv localhost:9092
+```
+
+### 4. Instalar Dependencias e Iniciar la Aplicación
+
+```bash
+# Instalar dependencias
 npm install
-```
 
-2. Start the application in development mode:
-```bash
+# Iniciar en modo desarrollo
 npm run start:dev
+
+# Alternativamente, construir y ejecutar en modo producción
+npm run build
+npm run start:prod
 ```
 
-3. The service will be running on port 3001 and will be listening to Kafka topics:
-- `orders.create` - For creating new orders
+### 5. Verificar que la Aplicación Está Funcionando
 
-## API Testing
+```bash
+curl http://localhost:3000
+```
 
-You can test the service through the API Gateway, which will send messages to this microservice via Kafka.
+Deberías recibir: `{ "status": "Client Gateway is up and running!" }`
 
-Example order creation request:
+## Probar el API
+
+### Crear una Orden
+
 ```bash
 curl -X POST http://localhost:3000/api/orders \
 -H "Content-Type: application/json" \
@@ -67,51 +82,70 @@ curl -X POST http://localhost:3000/api/orders \
     {
       "categoryId": "123e4567-e89b-12d3-a456-426614174000",
       "subCategoryId": "123e4567-e89b-12d3-a456-426614174001",
-      "title": "Test Product",
-      "description": "Test Description",
-      "location": "Test Location",
+      "title": "Producto de Prueba",
+      "description": "Descripción de Prueba",
+      "location": "Lima, Perú",
       "price": 100
     }
   ]
 }'
 ```
 
-## Project Structure
+## Estructura del Proyecto
 
 ```
-orders-ms/
+api-gateway/
 ├── src/
-│   ├── orders/           # Orders module
-│   ├── config/           # Configuration
-│   ├── common/           # Shared code
-│   └── transports/       # Kafka configuration
-├── prisma/
-│   └── schema.prisma     # Database schema
-└── test/                 # Test files
+│   ├── main.ts              # Punto de entrada
+│   ├── app.module.ts        # Módulo principal
+│   ├── orders/              # Módulo de órdenes
+│   │   ├── controllers/     # Controladores HTTP
+│   │   ├── dto/             # Objetos de Transferencia de Datos
+│   │   └── services/        # Servicios
+│   ├── common/              # Código compartido
+│   │   ├── dto/             # DTOs comunes
+│   │   └── exceptions/      # Filtros de excepción
+│   ├── config/              # Configuraciones
+│   └── transports/          # Configuración de transporte (Kafka)
+└── docker-compose.yml       # Configuración de Docker
 ```
 
-## Available Scripts
+## Módulos Principales
 
-- `npm run start:dev` - Start in development mode
-- `npm run build` - Build the application
-- `npm run start:prod` - Start in production mode
-- `npm run lint` - Run linting
-- `npm run test` - Run tests
+- **health-check**: Verifica el estado del servicio
+- **orders**: Gestiona las órdenes de usuarios
+- **transports**: Configura la comunicación con Kafka
 
-## Troubleshooting
+## Solución de Problemas
 
-1. If Kafka connection fails:
-   - Verify Kafka is running: `nc -zv localhost:9092`
-   - Check your `.env` configuration
-   - Ensure no firewall is blocking port 9092
+### Kafka no se conecta
+- Verifica que Kafka esté ejecutándose: `nc -zv localhost:9092`
+- Revisa los logs de Docker: `docker-compose logs -f kafka`
+- Asegúrate que las variables en `.env` sean correctas
 
+### El Servicio no Inicia
+- Verifica que el puerto no esté ocupado: `lsof -i :3000`
+- Asegúrate de que todas las dependencias estén instaladas correctamente
+- Revisa los logs del servicio para identificar errores específicos
 
-## Additional Notes
+### Errores en las Peticiones
+- Verifica que el formato JSON sea correcto
+- Revisa que el payload cumpla con las validaciones del DTO
+- Asegúrate de que el microservicio de órdenes esté ejecutándose
 
-- The service uses NestJS's microservice architecture
-- Kafka is used for message queuing
-- PostgreSQL (Neon) is used as the database
+## Comandos Útiles
 
-## Support
+```bash
+# Ejecutar tests
+npm run test
 
-For issues and questions, please contact the development team.
+# Ejecutar linter
+npm run lint
+
+# Formatear código
+npm run format
+```
+
+## Nota Importante
+
+Para que el API Gateway funcione correctamente, asegúrate de que el microservicio de órdenes (orders-ms) también esté configurado y ejecutándose.
